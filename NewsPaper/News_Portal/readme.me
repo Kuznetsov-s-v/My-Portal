@@ -1,0 +1,112 @@
+python -m venv venv  - Запускаем виртуальное окружение.
+venv\scripts\activate  
+pip install django
+
+python manage.py makemigrations - сохраняем модели в миграцию
+python manage.py migrate - выполняем саму миграцию
+python manage.py shell - запуск ком. строки для работы с бд
+    from django.contrib.auth.models import User - импорт моделей встроенных в джангу ( User )
+    from News_Portal.models import * - импорт моих модеоей
+
+1) Создать двух пользователей (с помощью метода User.objects.create_user('username')).
+    User.objects.create_user(username='biba', email='emal@emal.ru', password='pass', first_name='biba', last_name='oba')
+    User.objects.create_user(username='boba', email='emal@emal.ru', password='pass', first_name='boba', last_name='oba')
+    User.objects.all()
+2) Создать два объекта модели Author, связанные с пользователями.
+    Author.objects.create(user=User.objects.get(pk=1))
+    Author.objects.create(user=User.objects.get(pk=2))
+3) Добавить 4 категории в модель Category.
+    Category.objects.create(Category = 'Важно, срочно!')
+    Category.objects.create(Category = 'Горячее')
+    Category.objects.create(Category = 'Не важно, срочно!')
+    Category.objects.create(Category = 'Не важно, не срочно!')
+4) Добавить 2 статьи и 1 новость.
+    me = Author.objects.get(user=User.objects.get(username='biba'))
+    Post.objects.create(author=me, header='Супер заголовок от Бибы', text='Текст про корабли бороздящие просторы вселенной', field_choice = 'article') 
+    Post.objects.create(author=me, header='Супер заголовок от Бибы', text='Текст про корабли бороздящие просторы вселенной') 
+
+    me = Author.objects.get(user=User.objects.get(username='boba'))
+    Post.objects.create(author=me, header='Супер заголовок от Бoбы', text='Текст про корабли бороздящие просторы вселенной', field_choice = 'article')  
+5) Присвоить им категории (как минимум в одной статье/новости должно быть не меньше 2 категорий).
+    1) a = Post.objects.get(id=1)
+       b = Category.objects.get(id=1)
+       PostCategory.objects.create(post=a,category=b)
+    2) a = Post.objects.get(id=1)
+       b = Category.objects.get(id=2)
+       PostCategory.objects.create(post=a,category=b)   
+    3) a = Post.objects.get(id=2)
+       b = Category.objects.get(id=4)
+       PostCategory.objects.create(post=a,category=b)
+    4) a = Post.objects.get(id=3)
+       b = Category.objects.get(id=3)
+       PostCategory.objects.create(post=a,category=b)
+
+6) Создать как минимум 4 комментария к разным объектам модели Post (в каждом объекте должен быть как минимум один комментарий).
+    - Создал еще 2 пользователя, дабы было интерестнее :)
+    User.objects.create_user(username='heiter one', email='emal@emal.ru', password='pass', first_name='heiter one', last_name='one')
+    User.objects.create_user(username='heiter two', email='emal@emal.ru', password='pass', first_name='heiter two', last_name='two')
+    User.objects.create_user(username='heiter 3', email='emal@emal.ru', password='pass', first_name='heiter 3', last_name='3')
+    - 1 комментарий 1 поста
+    me = User.objects.get(username='biba')
+    post = Post.objects.get(pk=1)
+    Comment.objects.create(comment_user = me, post = post, text = 'Это лучшее что я видел!')
+    - 2 ком 1 пост
+    me = User.objects.get(username='boba')
+    Comment.objects.create(comment_user = me, post = post, text = 'Ну так сяк, сойдет')
+    - 3 ком 1 пост
+    me = User.objects.get(username='heiter one')
+    Comment.objects.create(comment_user = me, post = post, text = 'Ужас. больше не пиши сюда.')
+    - 4 ком 1 пост
+    me = User.objects.get(username='heiter two')
+    Comment.objects.create(comment_user = me, post = post, text = 'Солидарен с хейтером 1.')
+    - 1 ком 2 пост
+    me = User.objects.get(username='heiter 3')
+    post = Post.objects.get(pk=2)
+    Comment.objects.create(comment_user = me, post = post, text = 'Текст коментария от хейтера  3')
+    - 2 ком 2 пост
+    me = User.objects.get(username='heiter two')
+    Comment.objects.create(comment_user = me, post = post, text = 'Текст коментария от хейтера  2')
+    - 3 ком 2 пост
+    me = User.objects.get(username='boba')
+    Comment.objects.create(comment_user = me, post = post, text = '111111111')
+    - 1 ком 3 пост
+    me = User.objects.get(username='heiter 3')
+    post = Post.objects.get(pk=2)
+    Comment.objects.create(comment_user = me, post = post, text = '33333333333')
+    - 1 kom 3 post
+    me = User.objects.get(username='biba')
+    post = Post.objects.get(pk=3)
+    Comment.objects.create(comment_user = me, post = post, text = '55555')
+
+7) Применяя функции like() и dislike() к статьям/новостям и комментариям, скорректировать рейтинги этих объектов.
+    - Для того что бы поставить лайк или дислайк к Статье или Новости, нужно в pk= подставить id нужной нам статьи 
+    a = Post.objects.get(pk=1)
+    далее вписать a.like() для лайка или a.dislike() для дислайка
+
+    - Лайк к комментам, ставится подобно посту, только в pk= поставить id нужного нам комментария.
+    a = Comment.objects.get(pk=1)
+    далее вписать a.like() для лайка или a.dislike() для дислайка
+
+8) Обновить рейтинги пользователей.
+    Выбор пользователя: me = Author.objects.get(user=User.objects.get(username='biba'))
+                        me = Author.objects.get(pk=1)
+                        me = Author.objects.get(user__username='biba')
+                        любой способ из этого списка.
+    далее - me.update_rating()
+9) Вывести username и рейтинг лучшего пользователя (применяя сортировку и возвращая поля первого объекта).
+    b = Author.objects.all().order_by("-rate").values("user", "rate")[:1].first() 
+    c = User.objects.filter(id = b['user']).values('username')                    
+    b['user'] = c[0]['username']                                                  
+    b
+
+10) Вывести дату добавления, username автора, рейтинг, заголовок и превью лучшей статьи, основываясь на лайках/дислайках к этой статье.
+    b = Post.objects.all().order_by("-rate").values("auto_data", "author", "rate", "header").first()
+    c = User.objects.filter(id = b['author']).values('username')  
+    a = Post.objects.get(pk=b['author']) 
+    b['author'] = c[0]['username']  
+    b.update({'preview' : a.preview()}) 
+    b
+
+
+11) Вывести все комментарии (дата, пользователь, рейтинг, текст) к этой статье.
+    Comment.objects.filter(post=a).values('auto_data', 'comment_user', 'rate', 'text' )  
