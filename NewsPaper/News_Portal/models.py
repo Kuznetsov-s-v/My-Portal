@@ -5,10 +5,11 @@ from django.db.models import Sum
 from django.conf import settings
 from django.db import models
 
-#from News_Portal.models import *
-class Author(models.Model):  # наследуемся от класса Model
+
+class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     rate = models.IntegerField(default=0)
+
 
     def update_rating(self):
         # суммарный рейтинг каждой статьи автора умножается на 3
@@ -16,15 +17,26 @@ class Author(models.Model):  # наследуемся от класса Model
         # суммарный рейтинг всех комментариев автора;
         rate_comment = self.user.comment_set.all().aggregate(sum_rating=Sum('rate'))['sum_rating']
         # суммарный рейтинг всех комментариев к статьям автора.
-        rate_comment_post = Post.objects.filter(author=self).values('id') # поиск id поста оставленного автором => query_set
+        rate_comment_post = Post.objects.filter(author=self).values(
+            'id')  # поиск id поста оставленного автором => query_set
         a = 0
-        for i in range(len(rate_comment_post)): # проходим по query_set'у циклом вынимая у него id каждого поста оставленного автором
-            x = Comment.objects.filter(post_id=rate_comment_post[i]['id']).values('rate') # делаем запрос на рейтинг всех записей поста id=i => query_set
-            for j in range(len(x)):   # проходим по query_set'у суммируя рейтинги пользователей, далее переходим на следующий post
-                a = a + x[j]['rate']  # сколько постов оставил автор, столько запросов будет делать цикл. Не лучшее решение, как смог.
+        for i in range(
+                len(rate_comment_post)):  # проходим по query_set'у циклом вынимая у него id каждого поста оставленного автором
+            x = Comment.objects.filter(post_id=rate_comment_post[i]['id']).values(
+                'rate')  # делаем запрос на рейтинг всех записей поста id=i => query_set
+            for j in range(
+                    len(x)):  # проходим по query_set'у суммируя рейтинги пользователей, далее переходим на следующий post
+                a = a + x[j][
+                    'rate']  # сколько постов оставил автор, столько запросов будет делать цикл. Не лучшее решение, как смог.
 
         self.rate = rate_post_author + rate_comment + a
         self.save()
+
+    def __str__(self):
+        return self.user.username
+
+
+
 
 class Category(models.Model):
     Category = models.CharField(max_length=64, default="Default value", unique=True)
@@ -42,7 +54,7 @@ class Post(models.Model):
     ]
     field_choice = models.CharField(max_length=2, choices=POSITIONS, default=news)
 
-    auto_data = models.CharField(max_length=64, default=datetime.datetime.now())
+    auto_data = models.DateTimeField(max_length=64, default=datetime.datetime.now())
 
     header = models.CharField(max_length=64, default="Default value")
     text = models.TextField()
@@ -58,6 +70,12 @@ class Post(models.Model):
 
     def preview(self):
         return self.text[0:125] + '...'
+
+    def __str__(self):
+        return f'{self.auto_data.title()[:10]}: {self.header}'
+
+    def get_absolute_url(self):  # добавим абсолютный путь, чтобы после создания нас перебрасывало на страницу с товаром
+        return f'/news/{self.id}'
 
 
 class PostCategory(models.Model):
@@ -80,4 +98,3 @@ class Comment(models.Model):
     def dislike(self):
         self.rate -= 1
         self.save()
-
