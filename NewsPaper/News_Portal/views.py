@@ -3,11 +3,11 @@
 
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from datetime import datetime
-
+from django.views import View
 from django.shortcuts import render
 from django.core.paginator import Paginator  # импортируем класс, позволяющий удобно осуществлять постраничный вывод
 
-from .models import Post, Category
+from .models import Post, Category, Author
 from .filters import PostFilter
 from .forms import PostForm
 
@@ -15,7 +15,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 
+from django.core.mail import send_mail
 
+# список новостей
 class PostList(ListView):
     # Указываем модель, объекты которой мы будем выводить
     model = Post
@@ -44,7 +46,7 @@ class PostList(ListView):
         # context['filter'] = PostFilter(self.request.GET, queryset=self.get_queryset())
         return context
 
-
+# отдельная новость
 class PostDetail(DetailView):
     # Модель всё та же, но мы хотим получать информацию по отдельному товару
     model = Post
@@ -53,7 +55,7 @@ class PostDetail(DetailView):
     # Название объекта, в котором будет выбранный пользователем продукт
     context_object_name = 'post'
 
-
+# поиск новости
 class SearchList(ListView):
     # Указываем модель, объекты которой мы будем выводить
     model = Post
@@ -92,7 +94,7 @@ class SearchList(ListView):
 
         return super().get(request, *args, **kwargs)
 
-
+# добавление новости
 class PostCreateView(PermissionRequiredMixin, CreateView):
     template_name = 'add.html'
     form_class = PostForm
@@ -112,10 +114,24 @@ class PostUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
         return Post.objects.get(pk=id)
 
 
-# дженерик для удаления товара
+# дженерик для удаления объекта
 @method_decorator(login_required, name='dispatch')
 class PostDeleteView(PermissionRequiredMixin, DeleteView):
     template_name = 'delete.html'
     queryset = Post.objects.all()
     success_url = '/news/'
     permission_required = ('News_Portal.delete_Post', )
+
+
+# отрправляем письмо
+#class send_mail(View):
+#    def sendMail(self, request, *args, **kwargs):
+#        send_mail(
+#            author_and_rate=f'{Author.user} {Author.rate}',
+#            # имя автора и рейтинг будут в теме для удобства
+#            message=appointment.message,  # сообщение с кратким описанием проблемы
+#            from_email='peterbadson@yandex.ru',  # здесь указываете почту, с которой будете отправлять (об этом попозже)
+#            recipient_list=[]  # здесь список получателей. Например, секретарь, сам врач и т. д.
+#        )
+#
+#        return redirect('appointments:make_appointment')

@@ -5,11 +5,10 @@ from django.db.models import Sum
 from django.conf import settings
 from django.db import models
 
-
+# автор
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     rate = models.IntegerField(default=0)
-
 
     def update_rating(self):
         # суммарный рейтинг каждой статьи автора умножается на 3
@@ -35,13 +34,32 @@ class Author(models.Model):
     def __str__(self):
         return self.user.username
 
-
-
-
+# категория
 class Category(models.Model):
     Category = models.CharField(max_length=64, default="Default value", unique=True)
+    subscribers = models.ManyToManyField(settings.AUTH_USER_MODEL, through='CategoryUser')
 
+#    def __str__(self):
+#        return f'{self.category}'
+#
+#    def get_emails(self):
+#        result = set()
+#        for user in self.subscribers.all():
+#            result.add(user.email)
+#        return result
 
+# связывающая таблица для подписок, какой user на какую категорию подписан
+class CategoryUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('user', 'category')
+
+    def __str__(self):
+        return f'{self.category}'
+
+# пост
 class Post(models.Model):
     ManyToManyCategory = models.ManyToManyField(Category, through="PostCategory")
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
@@ -77,12 +95,12 @@ class Post(models.Model):
     def get_absolute_url(self):  # добавим абсолютный путь, чтобы после создания нас перебрасывало на страницу с товаром
         return f'/news/{self.id}'
 
-
+# связывающая таблица пост - категория
 class PostCategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
 
-
+# комментарии
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     comment_user = models.ForeignKey(User, on_delete=models.CASCADE)
