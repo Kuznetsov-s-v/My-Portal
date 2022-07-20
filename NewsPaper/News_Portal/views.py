@@ -124,14 +124,13 @@ class PostDeleteView(PermissionRequiredMixin, DeleteView):
 
 
 # отрправляем письмо
-#class send_mail(View):
-#    def sendMail(self, request, *args, **kwargs):
-#        send_mail(
-#            author_and_rate=f'{Author.user} {Author.rate}',
-#            # имя автора и рейтинг будут в теме для удобства
-#            message=appointment.message,  # сообщение с кратким описанием проблемы
-#            from_email='peterbadson@yandex.ru',  # здесь указываете почту, с которой будете отправлять (об этом попозже)
-#            recipient_list=[]  # здесь список получателей. Например, секретарь, сам врач и т. д.
-#        )
+#class SubscribeView(PermissionRequiredMixin, CreateView):
+#    template_name = 'subscribe.html'
+#    permission_required = ('news.add_post',)
+#    form_class = SubForm
+#    success_url = '/'
 #
-#        return redirect('appointments:make_appointment')
+#    def get_initial(self):
+#        initial = super().get_initial()
+#        initial['user'] = self.request.user
+#        return initial
