@@ -4,7 +4,7 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from datetime import datetime
 from django.views import View
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.paginator import Paginator  # импортируем класс, позволяющий удобно осуществлять постраничный вывод
 
 from .models import Post, Category, Author
@@ -123,14 +123,15 @@ class PostDeleteView(PermissionRequiredMixin, DeleteView):
     permission_required = ('News_Portal.delete_Post', )
 
 
-# отрправляем письмо
-#class SubscribeView(PermissionRequiredMixin, CreateView):
-#    template_name = 'subscribe.html'
-#    permission_required = ('news.add_post',)
-#    form_class = SubForm
-#    success_url = '/'
-#
-#    def get_initial(self):
-#        initial = super().get_initial()
-#        initial['user'] = self.request.user
-#        return initial
+# функция в которую нужно передавать id статьи и для всех
+# категорий этой статьи добавлять пользователя в subscribers
+# (пользователя достаем из request.user)
+@login_required
+def subscribe(request, **kwargs):
+    post = Post.objects.get(pk=kwargs['pk'])
+
+    user = request.user
+    if user not in Category.subscribers.all():
+        Category.subscribers.add(user)
+    print(f'{user} подписался ')  # для примера вывела на экран пользователя
+    return redirect(request.META.get('HTTP_REFERER', '/'))
