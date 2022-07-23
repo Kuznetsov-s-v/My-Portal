@@ -129,9 +129,9 @@ class PostDeleteView(PermissionRequiredMixin, DeleteView):
 @login_required
 def subscribe(request, **kwargs):
     post = Post.objects.get(pk=kwargs['pk'])
-
+    category = post.ManyToManyCategory.all().get(pk=kwargs['pk'])
     user = request.user
-    if user not in Category.subscribers.all():
-        Category.subscribers.add(user)
-    print(f'{user} подписался ')  # для примера вывела на экран пользователя
+    if user not in category.subscribers.all():
+        category.subscribers.add(user)
+    print(f'{user} подписался {category}')  # для примера вывела на экран пользователя
     return redirect(request.META.get('HTTP_REFERER', '/'))
