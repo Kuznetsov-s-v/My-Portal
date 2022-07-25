@@ -10,6 +10,9 @@ post
 {% block content %}
 
 <p>{{ post.header }}</p>
+{% for Category in post.category.all %}
+    <h5>Категория: {{ Category.Category }}</h5>
+{% endfor %}
 <p>{{ post.auto_data}}</p>
 <p>{{ post.text|censor }}</p>
 

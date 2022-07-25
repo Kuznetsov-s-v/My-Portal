@@ -1,6 +1,6 @@
 # Импортируем класс, который говорит нам о том,
 # что в этом представлении мы будем выводить список объектов из БД
-
+from django.template.loader import render_to_string
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from datetime import datetime
 from django.views import View
@@ -15,7 +15,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
+
 
 # список новостей
 class PostList(ListView):
@@ -54,6 +55,14 @@ class PostDetail(DetailView):
     template_name = 'post.html'
     # Название объекта, в котором будет выбранный пользователем продукт
     context_object_name = 'post'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user not in Category.subscribers.all():
+            context['subscribers'] = True
+        else:
+            context['subscribers'] = False
+        return context
 
 # поиск новости
 class SearchList(ListView):
@@ -101,6 +110,33 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
     permission_required = ('News_Portal.add_Post', )
 
 
+
+    def post(self, request, *args, **kwargs):
+        post_mail = Post(post_author=request.POST.get('author'),
+                         news_post=request.POST.get('ManyToManyCategory'),
+                         header_post=request.POST.get('header'),
+                         text_post=request.POST.get('text'),
+                         post_category=request.POST.get('post_category'))
+        post_mail.save()
+
+        # получаем наш html
+        html_content = render_to_string(
+            'mail_created.html',
+            {
+                'news_': post_mail,
+            }
+        )
+        # в конструкторе уже знакомые нам параметры, да? Называются правда немного по-другому, но суть та же.
+        msg = EmailMultiAlternatives(
+            subject = f'Здравствуй. {post_mail.post_author} Новая статья в твоём любимом разделе!',
+            body = post_mail.text_post[:50] + "...",
+            from_email = 'rbt-service@yandex.ru',
+            to = ['rbt-service@yandex.ru'],
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        return redirect('news/')
+# остановился на том что бы настроить settings!!!!!!!!!!!!!
 # дженерик для редактирования объекта
 @method_decorator(login_required, name='dispatch')
 class PostUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -134,4 +170,14 @@ def subscribe(request, **kwargs):
     if user not in category.subscribers.all():
         category.subscribers.add(user)
     print(f'{user} подписался {category}')  # для примера вывела на экран пользователя
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+@login_required
+def unsubscribe(request, **kwargs):
+    post = Post.objects.get(pk=kwargs['pk'])
+    category = post.ManyToManyCategory.all().get(pk=kwargs['pk'])
+    user = request.user
+    if user in category.subscribers.all():
+        category.subscribers.remove(user)
+
     return redirect(request.META.get('HTTP_REFERER', '/'))
