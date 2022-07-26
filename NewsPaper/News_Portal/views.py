@@ -58,11 +58,18 @@ class PostDetail(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if self.request.user not in Category.subscribers.all():
-            context['subscribers'] = True
-        else:
-            context['subscribers'] = False
+        #Т.е. сначала вам нужно достать все категории конкретной статьи
+        categories = self.object.ManyToManyCategory.all()
+        # и уже после этого искать пользователя среди подписчиков этих категорий
+        context['subscribers'] = False
+        for i in categories:
+            if self.request.user in i.subscribers.all():
+                context['subscribers'] = True
+                break
+
         return context
+
+
 
 # поиск новости
 class SearchList(ListView):
@@ -112,11 +119,10 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
 
 
     def post(self, request, *args, **kwargs):
-        post_mail = Post(post_author=request.POST.get('author'),
-                         news_post=request.POST.get('ManyToManyCategory'),
+        post_mail = Post(post_author=Author.objects.get(self.request.user),
+                         news_post=request.POST.get('field_choice'),
                          header_post=request.POST.get('header'),
-                         text_post=request.POST.get('text'),
-                         post_category=request.POST.get('post_category'))
+                         text_post=request.POST.get('text'))
         post_mail.save()
 
         # получаем наш html
@@ -136,7 +142,7 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
         msg.attach_alternative(html_content, "text/html")
         msg.send()
         return redirect('news/')
-# остановился на том что бы настроить settings!!!!!!!!!!!!!
+
 # дженерик для редактирования объекта
 @method_decorator(login_required, name='dispatch')
 class PostUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
