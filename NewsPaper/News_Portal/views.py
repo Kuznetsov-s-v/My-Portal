@@ -119,29 +119,31 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
 
 
     def post(self, request, *args, **kwargs):
-        post_mail = Post(post_author=Author.objects.get(self.request.user),
-                         news_post=request.POST.get('field_choice'),
-                         header_post=request.POST.get('header'),
-                         text_post=request.POST.get('text'))
+        post_mail = Post(#author=Author.objects.get(user=self.request.user),
+                         author=Author.objects.get(pk=request.POST['author']),
+                         #ManyToManyCategory=request.POST.get('ManyToManyCategory'),
+                         field_choice=request.POST.get('field_choice'),
+                         header=request.POST.get('header'),
+                         text=request.POST.get('text'))
         post_mail.save()
-
+#
         # получаем наш html
         html_content = render_to_string(
             'mail_created.html',
             {
-                'news_': post_mail,
+                'post_mail': post_mail,
             }
         )
         # в конструкторе уже знакомые нам параметры, да? Называются правда немного по-другому, но суть та же.
         msg = EmailMultiAlternatives(
-            subject = f'Здравствуй. {post_mail.post_author} Новая статья в твоём любимом разделе!',
-            body = post_mail.text_post[:50] + "...",
-            from_email = 'rbt-service@yandex.ru',
-            to = ['rbt-service@yandex.ru'],
+            subject = f'Здравствуй. {self.request.user} Новая статья в твоём любимом разделе!',
+            body = post_mail.text[:50] + "...",
+            from_email = 'qwertyuytrewqwerghbvcds@mail.ru',
+            to=['rbt-service@yandex.ru'],
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send()
-        return redirect('news/')
+        return redirect('/')
 
 # дженерик для редактирования объекта
 @method_decorator(login_required, name='dispatch')

@@ -15,7 +15,7 @@ urlpatterns = [
     # int — указывает на то, что принимаются только целочисленные значения
     path('<int:pk>', PostDetail.as_view() , name='post_detail'),
     path('search', SearchList.as_view()),
-    path('add/', PostCreateView.as_view(), name='post_create'),  # Ссылка на создание товара
+    path('add/', PostCreateView.as_view(), name='post_create'),  # Ссылка на создание статьи
     path('<int:pk>/edit/', PostUpdateView.as_view(), name='post_update'),
     path('<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
     path('subscribe/<int:pk>', subscribe, name='subscribe'),
