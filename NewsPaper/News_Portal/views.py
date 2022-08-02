@@ -140,6 +140,7 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
             body = post_mail.text[:50] + "...",
             from_email = 'qwertyuytrewqwerghbvcds@mail.ru',
             to=['rbt-service@yandex.ru'],
+            #to=self.request.email    #отправка на емайл пользователя
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send()
