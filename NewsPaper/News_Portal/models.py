@@ -5,6 +5,7 @@ from django.db.models import Sum
 from django.conf import settings
 from django.db import models
 
+
 # автор
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -34,10 +35,12 @@ class Author(models.Model):
     def __str__(self):
         return self.user.username
 
+
 # категория
 class Category(models.Model):
     Category = models.CharField(max_length=64, default="Default value", unique=True)
     subscribers = models.ManyToManyField(User, through='CategoryUser')
+
 
 #    def __str__(self):
 #        return f'{self.category}'
@@ -58,6 +61,7 @@ class CategoryUser(models.Model):
 
     def __str__(self):
         return f'{self.category}'
+
 
 # пост
 class Post(models.Model):
@@ -95,10 +99,12 @@ class Post(models.Model):
     def get_absolute_url(self):  # добавим абсолютный путь, чтобы после создания нас перебрасывало на страницу с товаром
         return f'/news/{self.id}'
 
+
 # связывающая таблица пост - категория
 class PostCategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
 
 # комментарии
 class Comment(models.Model):
@@ -116,3 +122,8 @@ class Comment(models.Model):
     def dislike(self):
         self.rate -= 1
         self.save()
+
+
+class Subscriber(models.Model):
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
