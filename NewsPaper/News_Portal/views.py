@@ -17,6 +17,9 @@ from django.contrib.auth.decorators import login_required
 
 from django.core.mail import send_mail, EmailMultiAlternatives
 
+from django.http import HttpResponse
+from django.views import View
+from .signals import limitation_post
 
 # список новостей
 class PostList(ListView):
@@ -125,8 +128,8 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
                          field_choice=request.POST.get('field_choice'),
                          header=request.POST.get('header'),
                          text=request.POST.get('text'))
-        post_mail.save()
-#
+        #post_mail.save()
+        '''
         # получаем наш html
         html_content = render_to_string(
             'mail_created.html',
@@ -143,8 +146,13 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
             #to=self.request.email    #отправка на емайл пользователя
         )
         msg.attach_alternative(html_content, "text/html")
-        msg.send()
-        return redirect('/')
+        msg.send()'''
+        if limitation_post(sender=Post, instance=post_mail, **kwargs) < 10000:
+            post_mail.save()
+            post_mail.ManyToManyCategory.add(*request.POST.getlist('post_category'))
+        else:
+            print('Нельзя создавать больше 3х статей за день')
+            return redirect('/')
 
 # дженерик для редактирования объекта
 @method_decorator(login_required, name='dispatch')
@@ -190,3 +198,4 @@ def unsubscribe(request, **kwargs):
         category.subscribers.remove(user)
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
+

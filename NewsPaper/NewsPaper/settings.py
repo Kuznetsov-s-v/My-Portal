@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'News_Portal.apps.NewsPortalConfig',
+    #'News_Portal.apps.NewsPortalConfig',
     'News_Portal',
     'accounts',
     'django.contrib.sites',
@@ -135,7 +135,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -178,3 +178,11 @@ EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER + '@mail.ru'
 
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+
+#OSOdSRoNwPxeyAKT48WlwAjNZNhb3RRh@redis-14500.c250.eu-central-1-1.ec2.cloud.redislabs.com:14500
+
+CELERY_BROKER_URL = 'redis://:OSOdSRoNwPxeyAKT48WlwAjNZNhb3RRh@redis-14500.c250.eu-central-1-1.ec2.cloud.redislabs.com:14500/0'
+CELERY_RESULT_BACKEND = 'redis://:OSOdSRoNwPxeyAKT48WlwAjNZNhb3RRh@redis-14500.c250.eu-central-1-1.ec2.cloud.redislabs.com:14500/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
