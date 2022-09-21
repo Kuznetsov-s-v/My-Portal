@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
-from NewsPaper.News_Portal.models import Post, Category
+from .models import Post, Category
 
 @shared_task
 def celery_notify_subscribers(subject, from_email, email, html_content):
@@ -33,7 +33,7 @@ def printer(N):
             msg = EmailMultiAlternatives(
                 subject=f'"Еженедельная подписка (celery)"',
                 body="Новости",
-                from_email='yamargoshka@inbox.ru',
+                from_email='rbt-service@inbox.ru',
                 to=category.get_subscribers_emails())
             msg.attach_alternative(html_content, "text/html")
             msg.send()
