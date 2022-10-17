@@ -14,12 +14,13 @@ from .forms import PostForm
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 
 from django.core.mail import send_mail, EmailMultiAlternatives
 
 from django.http import HttpResponse
 from django.views import View
-from .signals import limitation_post
+
 
 # список новостей
 class PostList(ListView):
@@ -71,6 +72,15 @@ class PostDetail(DetailView):
                 break
 
         return context
+
+    def get_object(self, **kwargs):
+        obj = cache.get(f'post-{self.kwargs["pk"]}', None)
+
+        if not obj:
+            obj = super().get_object(queryset=self.queryset)
+            cache.set(f'post-{self.kwargs["pk"]}', obj)
+
+        return obj
 
 
 
@@ -147,12 +157,12 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send()'''
-        if limitation_post(sender=Post, instance=post_mail, **kwargs) < 10000:
-            post_mail.save()
-            post_mail.ManyToManyCategory.add(*request.POST.getlist('post_category'))
-        else:
-            print('Нельзя создавать больше 3х статей за день')
-            return redirect('/')
+        #if limitation_post(sender=Post, instance=post_mail, **kwargs) < 10000000:
+        post_mail.save()
+        post_mail.ManyToManyCategory.add(*request.POST.getlist('post_category'))
+        #else:
+            #print('Нельзя создавать больше 3х статей за день')
+        return redirect('/')
 
 # дженерик для редактирования объекта
 @method_decorator(login_required, name='dispatch')

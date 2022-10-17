@@ -1,9 +1,13 @@
 <!--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
 {% extends 'flatpages/default.html' %}
 {% load custom_filters %}cd
-{% block title %}
-Products
-{% endblock title %}
+
+{% load cache %}
+    {% cache 60 title %}
+        {% block title %}
+        News
+        {% endblock title %}
+    {% endcache %}
 
 {% block content %}
 

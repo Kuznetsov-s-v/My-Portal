@@ -2,9 +2,12 @@
 {% extends 'flatpages/default.html' %}
 {% load custom_filters %}
 <!-- Название у нас будет news -->
-{% block title %}
-post
-{% endblock title %}
+{% load cache %}
+    {% cache 300 title %}
+        {% block title %}
+        News
+        {% endblock title %}
+    {% endcache %}
 
 <!-- В контенте на странице мы выводим все товары -->
 {% block content %}
